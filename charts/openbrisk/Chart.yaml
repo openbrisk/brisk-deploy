@@ -1,6 +1,10 @@
 apiVersion: v1
-appVersion: "0.0.1"
 description: A Helm chart for OpenBrisk
 name: openbrisk
-namespace: openbrisk
 version: 0.0.1
+keywords:
+  - brisk
+  - faas 
+  - serverless
+home: http://openbrisk.org/
+appVersion: "0.0.1"
