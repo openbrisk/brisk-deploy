@@ -2,6 +2,8 @@
 # Declare variables to be passed into your templates.
 
 version: 0.0.1
+namespace: openbrisk # Namespace for the application services.
+functionsNamespace: openbrisk-functions # Namespace for the function services.
 
 # Controller configuration.
 controller:
@@ -35,3 +37,5 @@ queue:
       pullPolicy: IfNotPresent
   service:
     type: ClusterIP
+
+# 

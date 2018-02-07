@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: brisk-gateway
-  namespace: openbrisk
+  namespace: {{ .Values.namespace }}
   labels:
     app: brisk-gateway
     environment: dev
@@ -48,7 +48,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: brisk-gateway
-  namespace: openbrisk
+  namespace: {{ .Values.namespace }}
   labels:
       app: brisk-gateway
       environment: dev
@@ -68,21 +68,21 @@ spec:
       release: {{ .Values.version }}
       tier: backend
       track: stable
----
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: brisk-gateway
-  namespace: openbrisk
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: brisk-gateway
-  minReplicas: {{ .Values.gateway.deployment.replicaCount }}
-  maxReplicas: 99
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        targetAverageUtilization: 50
+#---
+#apiVersion: autoscaling/v2beta1
+#kind: HorizontalPodAutoscaler
+#metadata:
+#  name: brisk-gateway
+#  namespace: {{ .Values.namespace }}
+#spec:
+#  scaleTargetRef:
+#    apiVersion: apps/v1
+#    kind: Deployment
+#    name: brisk-gateway
+#  minReplicas: {{ .Values.gateway.deployment.replicaCount }}
+#  maxReplicas: 99
+#  metrics:
+#    - type: Resource
+#      resource:
+#        name: cpu
+#        targetAverageUtilization: 50
