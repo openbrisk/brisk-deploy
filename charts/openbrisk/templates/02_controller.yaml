@@ -32,6 +32,12 @@ spec:
           - name : brisk-controller
             image: {{ .Values.controller.deployment.image.repository }}:{{ .Values.controller.deployment.image.tag }}
             imagePullPolicy: {{ .Values.controller.deployment.image.pullPolicy }}
+            livenessProbe:
+              httpGet:
+                path: /healthz
+                port: 8080
+              initialDelaySeconds: 3
+              periodSeconds: 3
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst

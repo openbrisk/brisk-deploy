@@ -32,6 +32,12 @@ spec:
           - name : brisk-gateway
             image: {{ .Values.gateway.deployment.image.repository }}:{{ .Values.gateway.deployment.image.tag }}
             imagePullPolicy: {{ .Values.gateway.deployment.image.pullPolicy }}
+            livenessProbe:
+              httpGet:
+                path: /healthz
+                port: 8080
+              initialDelaySeconds: 3
+              periodSeconds: 3            
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
