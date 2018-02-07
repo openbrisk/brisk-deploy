@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brisk-gateway
+  namespace: openbrisk
+  labels:
+    app: brisk-gateway
+    environment: dev
+    release: {{ .Values.version }}
+    tier: backend
+    track: stable
+spec:
+  replicas: {{ .Values.gateway.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: brisk-gateway
+      environment: dev
+      release: {{ .Values.version }}
+      tier: backend
+      track: stable
+  template:
+    metadata:
+      name: brisk-gateway
+      labels:
+        app: brisk-gateway
+        environment: dev
+        release: {{ .Values.version }}
+        tier: backend
+        track: stable
+    spec:
+      containers:
+          - name : brisk-gateway
+            image: {{ .Values.gateway.deployment.image.repository }}:{{ .Values.gateway.deployment.image.tag }}
+            imagePullPolicy: {{ .Values.gateway.deployment.image.pullPolicy }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: brisk-gateway
+  namespace: openbrisk
+  labels:
+      app: brisk-gateway
+      environment: dev
+      release: {{ .Values.version }}
+      tier: backend
+      track: stable
+spec:
+  type: {{ .Values.gateway.service.type }}
+  ports:
+      - name: "tcp-80-8080-brisk-gateway"
+        protocol: TCP
+        port: 80
+        targetPort: 8080
+  selector:
+      app: brisk-gateway
+      environment: dev
+      release: {{ .Values.version }}
+      tier: backend
+      track: stable
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: brisk-gateway
+  namespace: openbrisk
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: brisk-gateway
+  minReplicas: {{ .Values.gateway.deployment.replicaCount }}
+  maxReplicas: 99
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 50

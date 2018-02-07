@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brisk-controller
+  namespace: openbrisk
+  labels:
+    app: brisk-controller
+    environment: dev
+    release: {{ .Values.version }}
+    tier: backend
+    track: stable
+spec:
+  replicas: {{ .Values.controller.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: brisk-controller
+      environment: dev
+      release: {{ .Values.version }}
+      tier: backend
+      track: stable
+  template:
+    metadata:
+      name: brisk-controller
+      labels:
+        app: brisk-controller
+        environment: dev
+        release: {{ .Values.version }}
+        tier: backend
+        track: stable
+    spec:
+      containers:
+          - name : brisk-controller
+            image: {{ .Values.controller.deployment.image.repository }}:{{ .Values.controller.deployment.image.tag }}
+            imagePullPolicy: {{ .Values.controller.deployment.image.pullPolicy }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: brisk-controller
+  namespace: openbrisk
+  labels:
+      app: brisk-controller
+      environment: dev
+      release: {{ .Values.version }}
+      tier: backend
+      track: stable
+spec:
+  type: {{ .Values.controller.service.type }}
+  ports:
+      - name: "tcp-80-8080-brisk-controller"
+        protocol: TCP
+        port: 80
+        targetPort: 8080
+  selector:
+      app: brisk-controller
+      environment: dev
+      release: {{ .Values.version }}
+      tier: backend
+      track: stable
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: brisk-controller
+  namespace: openbrisk
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: brisk-controller
+  minReplicas: {{ .Values.controller.deployment.replicaCount }}
+  maxReplicas: 99
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 50
